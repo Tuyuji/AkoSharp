@@ -1,0 +1,11 @@
+window.title "The \"CUM\" Jar"
+render.scale 1.0
+window.width 800
+window.lol "true"
+
+render [
+    backend "Vulkan"
+    voxel [
+        +enabled
+    ]
+]

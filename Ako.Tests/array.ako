@@ -1,0 +1,19 @@
+[[
+
+123
+
+[
+    athing "This is a \"THING!\""
+]
+
+"Bruh moment"
+
+&int
+&uint
+&float
+
+12.5
+0.35f
++
+-
+]]
