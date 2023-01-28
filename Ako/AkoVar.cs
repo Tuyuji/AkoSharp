@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Numerics;
 using System.Text;
 
 namespace Ako
@@ -22,7 +23,7 @@ namespace Ako
             return handle.Type;
         }
     }
-    public partial class AkoVar
+    public class AkoVar
     {
         public enum VarType
         {
@@ -88,6 +89,10 @@ namespace Ako
                         _value = null;
                         Type = VarType.NULL;
                         break;
+                    case AkoVar s:
+                        this.Type = s.Type;
+                        this._value = s._value;
+                        break;
                     default:
                         throw new Exception("Unsupported type.");
                         break;
@@ -96,6 +101,22 @@ namespace Ako
         }
         
         protected dynamic _value;
+
+        public int Count
+        {
+            get
+            {
+                switch (Type)
+                {
+                    case VarType.TABLE:
+                        return TableValue.Count;
+                    case VarType.ARRAY:
+                        return ArrayValue.Count;
+                    default:
+                        throw new Exception("Invalid type, expected bool got " + Enum.GetName(typeof(VarType), Type));
+                }
+            }
+        }
 
         public override string ToString()
         {
@@ -113,11 +134,11 @@ namespace Ako
                     break;
                 case VarType.TABLE:
                     sb.Append("Count: ");
-                    sb.Append(_dic.Count);
+                    sb.Append(TableValue.Count);
                     break;
                 case VarType.ARRAY:
                     sb.Append("Count: ");
-                    sb.Append(_list.Count);
+                    sb.Append(ArrayValue.Count);
                     break;         
                 default:
                     sb.Append(Value.ToString());
@@ -182,6 +203,16 @@ namespace Ako
             Value = value;
         }
 
+        public float GetFloat()
+        {
+            return Type switch
+            {
+                VarType.INT => _value,
+                VarType.FLOAT => _value,
+                _ => throw new Exception("Can't convert to float from " + Enum.GetName(typeof(VarType), Type))
+            };
+        }
+
         #region Implicit operators
         
         public static implicit operator string(AkoVar sVar)
@@ -224,41 +255,90 @@ namespace Ako
             return aVar.Type;
         }
 
+        private static void CheckCount(AkoVar var, int expected)
+        {
+            if(var.Count != expected)
+                throw new Exception($"Array size mismatch, expected {expected} got {var.Count}");
+        }
+        
+        public static implicit operator Vector2(AkoVar array)
+        {
+            if(array.Type != VarType.ARRAY)
+                throw new Exception("Invalid type, expected bool got " + Enum.GetName(typeof(VarType), array.Type));
+
+            CheckCount(array, 2);
+            
+            return new Vector2(array[0].GetFloat(), array[1].GetFloat());
+        }
+        
+        public static implicit operator Vector3(AkoVar array)
+        {
+            if(array.Type != VarType.ARRAY)
+                throw new Exception("Invalid type, expected bool got " + Enum.GetName(typeof(VarType), array.Type));
+            
+            CheckCount(array, 3);
+
+            return new Vector3(array[0].GetFloat(), array[1].GetFloat(), array[2].GetFloat());
+        }
+
+        public static implicit operator Vector4(AkoVar array)
+        {
+            if(array.Type != VarType.ARRAY)
+                throw new Exception("Invalid type, expected bool got " + Enum.GetName(typeof(VarType), array.Type));
+            
+            CheckCount(array, 4);
+
+            return new Vector4(array[0].GetFloat(), array[1].GetFloat(), array[2].GetFloat(), array[3].GetFloat());
+        }
+
         #endregion
 
         #region Table Functions
 
-        private ConcurrentDictionary<string, AkoVar> _dic => _value;
+        public ConcurrentDictionary<string, AkoVar> TableValue => _value;
+
+        public bool ContainsKey(string key)
+        {
+            return TableValue.ContainsKey(key);
+        }
 
         public bool TryGet(string key, out AkoVar value)
         {
-            return _dic.TryGetValue(key, out value);
+            return TableValue.TryGetValue(key, out value);
         }
         
         public void Get(string key, out AkoVar value)
         {
-            if(!_dic.ContainsKey(key))
-                _dic.TryAdd(key, new AkoVar());
+            if(!TableValue.ContainsKey(key))
+                TableValue.TryAdd(key, new AkoVar());
                 
-            _dic.TryGetValue(key, out value);
+            TableValue.TryGetValue(key, out value);
         }
 
         public void GetTable(string key, out AkoVar value)
         {
-            if(!_dic.ContainsKey(key))
-                _dic.TryAdd(key, new AkoVar(VarType.TABLE));
+            if(!TableValue.ContainsKey(key))
+                TableValue.TryAdd(key, new AkoVar(VarType.TABLE));
                 
-            _dic.TryGetValue(key, out var tempValue);
+            TableValue.TryGetValue(key, out var tempValue);
             value = tempValue;
+        }
+
+        public bool TrySet(string key, AkoVar value)
+        {
+            if (TableValue.ContainsKey(key))
+                return false;
+            
+            return TableValue.TryAdd(key, value);
         }
         
         public dynamic this[string key]
         {
-            get => _dic[key];
+            get => TableValue[key];
             set
             {
                 if (value is AkoVar)
-                    _dic[key] = value;
+                    TableValue[key] = value;
                 else
                     throw new Exception("AkoTable can only contain AkoVar");
             }
@@ -268,22 +348,22 @@ namespace Ako
 
         #region Array Functions
 
-        private List<AkoVar> _list => _value;
+        public List<AkoVar> ArrayValue => _value;
 
         public void Add(AkoVar value)
         {
-            _list.Add(value);
+            ArrayValue.Add(value);
         }
         
         public void Remove(AkoVar value)
         {
-            _list.Remove(value);
+            ArrayValue.Remove(value);
         }
         
         public AkoVar this[int key]
         {
-            get => _list[key];
-            set => _list[key] = value;
+            get => ArrayValue[key];
+            set => ArrayValue[key] = value;
         }
 
         #endregion
