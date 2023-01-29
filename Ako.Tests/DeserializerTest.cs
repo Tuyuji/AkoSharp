@@ -26,7 +26,6 @@ namespace Tuyuji.Tests
         {
             var root = Deserializer.FromString(File.ReadAllText("test.ako"));
 
-
             Assert.AreEqual(root["render"]["voxel"]["enabled"].Value, true);
         }
 
