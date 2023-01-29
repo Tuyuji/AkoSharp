@@ -5,7 +5,7 @@ For info about Ako see [Ako's README](https://github.com/Tuyuji/Ako/blob/main/RE
 
 ## Getting started
 ```csharp
-using Ako;
+using AkoSharp;
 
 var root = Deserializer.FromString(File.ReadAllText("myfile.ako"));
 Vector3 windowSize = root["window"]["size"];

@@ -1,10 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using Ako;
 using Ako.Gen;
 using Antlr4.Runtime.Tree;
-using KeyVarPair = System.Collections.Generic.KeyValuePair<string[], Ako.AkoVar>;
-namespace Ako;
+using KeyVarPair = System.Collections.Generic.KeyValuePair<string[], AkoSharp.AkoVar>;
+namespace AkoSharp;
 
 internal class AkoDocumentVisitor : AkoBaseVisitor<object?>
 {

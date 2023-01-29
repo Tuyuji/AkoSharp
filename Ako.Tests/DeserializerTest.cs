@@ -2,6 +2,7 @@ using System.IO;
 using System.Numerics;
 using System.Text;
 using Ako;
+using AkoSharp;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Tuyuji.Tests

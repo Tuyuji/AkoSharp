@@ -1,6 +1,6 @@
 using System;
 
-namespace Ako
+namespace AkoSharp
 {
     [AttributeUsage(AttributeTargets.Class)]
     public class ShortType : Attribute

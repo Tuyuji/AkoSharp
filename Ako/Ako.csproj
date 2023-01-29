@@ -12,6 +12,10 @@
         <PackageProjectUrl>https://github.com/Tuyuji/AkoSharp</PackageProjectUrl>
         <RepositoryUrl>https://github.com/Tuyuji/AkoSharp</RepositoryUrl>
         <RepositoryType>git</RepositoryType>
+        <AssemblyName>AkoSharp</AssemblyName>
+        <RootNamespace>AkoSharp</RootNamespace>
+        <PackageId>AkoSharp</PackageId>
+        <Product>AkoSharp</Product>
     </PropertyGroup>
 
     <ItemGroup>
