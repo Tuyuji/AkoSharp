@@ -4,6 +4,7 @@
 name: .NET
 
 on:
+  create: # On new tags 
   push:
     branches: [ "main" ]
   pull_request:
