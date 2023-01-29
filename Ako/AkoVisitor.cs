@@ -8,7 +8,6 @@ namespace Ako;
 
 internal class AkoDocumentVisitor : AkoBaseVisitor<object?>
 {
-    
     public override object? VisitDocumentTable(AkoParser.DocumentTableContext context)
     {
         return Visit(context.table_expr_list());

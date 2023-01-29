@@ -1,4 +1,5 @@
 using System.IO;
+using System.Numerics;
 using System.Text;
 using Ako;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -63,6 +64,44 @@ namespace Tuyuji.Tests
             Assert.AreEqual(root.Type, AkoVar.VarType.TABLE);
             Assert.AreEqual(root["enable"], true);
             Assert.AreEqual(root["enable"], AkoVar.VarType.BOOL);
+        }
+
+        [TestMethod]
+        public void OverrideTest()
+        {
+            var defaults = Deserializer.FromString("window.subsystem \"SDL2\" window.title \"Default\"");
+            Assert.AreEqual(defaults["window"]["subsystem"], "SDL2");
+            Assert.AreEqual(defaults["window"]["title"], "Default");
+            
+            Deserializer.FromString(defaults, "window.subsystem \"Wayland\" window.title \"Linux\"");
+            Assert.AreEqual(defaults["window"]["subsystem"], "Wayland");
+            Assert.AreEqual(defaults["window"]["title"], "Linux");
+        }
+
+        [TestMethod]
+        public void ProperlyMerge()
+        {
+            var defaults = Deserializer.FromString("window.subsystem \"SDL2\" window.title \"Default\" window.size 800x600");
+            Assert.AreEqual(defaults["window"]["subsystem"], "SDL2");
+            Assert.AreEqual(defaults["window"]["title"], "Default");
+            Assert.AreEqual(defaults["window"]["size"], new Vector2(800, 600));
+            
+            Deserializer.FromString(defaults, "window.subsystem \"Wayland\" window.title \"Linux\"");
+            Assert.AreEqual(defaults["window"]["subsystem"], "Wayland");
+            Assert.AreEqual(defaults["window"]["title"], "Linux");
+            Assert.AreEqual(defaults["window"]["size"], new Vector2(800, 600));
+            
+            //Now array merging
+            defaults = Deserializer.FromString("[[ 51 23 5.3f 8.2 [ window.size 760x100 ] ]]");
+            Assert.AreEqual(defaults[0], 51);
+            Assert.AreEqual(defaults[1], 23);
+            Assert.AreEqual(defaults[2], 5.3f);
+            Assert.AreEqual(defaults[3], 8.2f);
+            Assert.AreEqual(defaults[4]["window"]["size"], new Vector2(760, 100));
+            
+            Deserializer.FromString(defaults, "[[ \"Hello\" 65 ]]");
+            Assert.AreEqual(defaults[5], "Hello");
+            Assert.AreEqual(defaults[6], 65);
         }
     }
 }

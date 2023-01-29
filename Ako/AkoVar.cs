@@ -367,5 +367,46 @@ namespace Ako
         }
 
         #endregion
+
+        public void Merge(AkoVar newVar)
+        {
+            if (this.Type != newVar.Type)
+                throw new Exception("Can't merge two different types");
+
+            switch (this.Type)
+            {
+                case VarType.ARRAY:
+                    foreach (var value in newVar.ArrayValue)
+                    {
+                        this.ArrayValue.Add(value);
+                    }
+                    break;
+                case VarType.TABLE:
+                    //For tables we will replace the old value with the new one
+                    //unless its an array or table in which case we will merge them
+                    foreach (var (key, value) in newVar.TableValue)
+                    {
+                        if (this.TableValue.ContainsKey(key))
+                        {
+                            if (value.Type == VarType.ARRAY || value.Type == VarType.TABLE)
+                            {
+                                this.TableValue[key].Merge(value);
+                            }
+                            else
+                            {
+                                this.TableValue[key] = value;
+                            }
+                        }
+                        else
+                        {
+                            this.TableValue.TryAdd(key, value);
+                        }
+                    }
+                    break;
+                default:
+                    throw new Exception("Can't merge a " + Enum.GetName(typeof(VarType), this.Type));
+                
+            }
+        }
     }
 }
