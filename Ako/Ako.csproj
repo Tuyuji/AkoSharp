@@ -2,7 +2,7 @@
 
     <PropertyGroup>
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-        <Title>Ako</Title>
+        <Title>AkoSharp</Title>
         <Authors>Tuyuji</Authors>
         <Description>A global config/cvar system.   </Description>
         <Company>Tuyuji</Company>
