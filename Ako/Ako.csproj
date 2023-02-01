@@ -7,7 +7,7 @@
         <Description>A config language.</Description>
         <Company>Tuyuji</Company>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
-        <PackageVersion>2.0.0</PackageVersion>
+        <PackageVersion>2.0.1</PackageVersion>
         <TargetFramework>net6.0</TargetFramework>
         <PackageProjectUrl>https://github.com/Tuyuji/AkoSharp</PackageProjectUrl>
         <RepositoryUrl>https://github.com/Tuyuji/AkoSharp</RepositoryUrl>
