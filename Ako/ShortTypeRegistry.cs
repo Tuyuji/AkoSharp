@@ -53,5 +53,13 @@ namespace AkoSharp
         {
             _registeredShortTypes.Clear();
         }
+
+        public static string GetShortTypeFromType(Type type)
+        {
+            var shortType = _registeredShortTypes.FirstOrDefault(e => e.Value == type);
+            if (shortType.Key == null)
+                throw new Exception($"Failed to find registered type \"{type}\"");
+            return shortType.Key;
+        }
     }
 }
