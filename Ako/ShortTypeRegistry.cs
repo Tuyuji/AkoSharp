@@ -9,9 +9,9 @@ namespace AkoSharp
     {
         private static Dictionary<string, Type> _registeredShortTypes = new();
         
-        public static void Init()
+        public static void Register(Assembly[] assemblies)
         {
-            var configs = AppDomain.CurrentDomain.GetAssemblies()
+            var configs = assemblies
                 .SelectMany(e => e.GetTypes())
                 .Where(e => e.IsClass && e.GetCustomAttribute<ShortType>() != null)
                 .ToDictionary(mc => mc, mc => mc.GetCustomAttribute<ShortType>());
@@ -20,28 +20,56 @@ namespace AkoSharp
             {
                 if (stName.Value == null)
                     continue;
-                //Log.Verbose($"Found Config: {stName.Value.Name} -> {stName.Key}");
-                _registeredShortTypes.Add(stName.Value.Name, stName.Key);
+                
+                Register(stName.Value.Name, stName.Key);
             }
-            
-            _registeredShortTypes.Add("int", typeof(int));
-            _registeredShortTypes.Add("float", typeof(float));
-            _registeredShortTypes.Add("double", typeof(double));
-            _registeredShortTypes.Add("string", typeof(string));
-            _registeredShortTypes.Add("bool", typeof(bool));
-            _registeredShortTypes.Add("byte", typeof(byte));
-            _registeredShortTypes.Add("char", typeof(char));
-            _registeredShortTypes.Add("decimal", typeof(decimal));
-            _registeredShortTypes.Add("long", typeof(long));
-            _registeredShortTypes.Add("short", typeof(short));
-            _registeredShortTypes.Add("uint", typeof(uint));
-            _registeredShortTypes.Add("ulong", typeof(ulong));
-            _registeredShortTypes.Add("ushort", typeof(ushort));
-            _registeredShortTypes.Add("sbyte", typeof(sbyte));
-            _registeredShortTypes.Add("object", typeof(object));
-            _registeredShortTypes.Add("void", typeof(void));
+        }
+        
+        public static void Register(Assembly assembly)
+        {
+            Register(new[] {assembly});
         }
 
+        public static void Register(string shortName, Type type)
+        {
+            _registeredShortTypes.Add(shortName, type);
+        }
+        
+        public static void Register<T>(string shortName)
+        {
+            _registeredShortTypes.Add(shortName, typeof(T));
+        }
+
+        public static void Clear()
+        {
+            _registeredShortTypes.Clear();
+        }
+
+        public static void RegisterCTypes()
+        {
+            Register<int>("int");
+            Register<float>("float");
+            Register<double>("double");
+            Register<string>("string");
+            Register<bool>("bool");
+            Register<byte>("byte");
+            Register<char>("char");
+            Register<decimal>("decimal");
+            Register<long>("long");
+            Register<short>("short");
+            Register<uint>("uint");
+            Register<ulong>("ulong");
+            Register<ushort>("ushort");
+            Register<sbyte>("sbyte");
+            Register<object>("object");
+            Register("void", typeof(void));
+        }
+        
+        public static void Remove(string shortName)
+        {
+            _registeredShortTypes.Remove(shortName);
+        }
+        
         public static Type? GetTypeFromShortType(string shortTypeName)
         {
             if (!_registeredShortTypes.ContainsKey(shortTypeName))
@@ -49,6 +77,22 @@ namespace AkoSharp
             return _registeredShortTypes[shortTypeName];
         }
 
+        public static void AutoRegister(bool registerCTypes = true)
+        {
+            Register(AppDomain.CurrentDomain.GetAssemblies());
+            if (registerCTypes)
+                RegisterCTypes();
+        }
+        
+        [Obsolete("Use AutoRegister instead. " +
+                  "Will be removed in 3.0.0", false)]
+        public static void Init()
+        {
+            AutoRegister();
+        }
+        
+        [Obsolete("Use Clear instead. " +
+                  "Will be removed in 3.0.0", false)]
         public static void Shutdown()
         {
             _registeredShortTypes.Clear();

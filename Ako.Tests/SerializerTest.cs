@@ -10,13 +10,13 @@ public class SerializerTest
     [TestInitialize]
     public void TestInit()
     {
-        ShortTypeRegistry.Init();
+        ShortTypeRegistry.AutoRegister();
     }
 
     [TestCleanup]
     public void TestDeinit()
     {
-        ShortTypeRegistry.Shutdown();
+        ShortTypeRegistry.Clear();
     }
 
     [TestMethod]
