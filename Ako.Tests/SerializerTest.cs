@@ -26,10 +26,10 @@ public class SerializerTest
         var serializedRoot = Serializer.Serialize(testRoot);
         // make sure its valid
         testRoot = Deserializer.FromString(serializedRoot);
-        Assert.AreEqual(testRoot["player"]["enabled"].Value, true);
-        Assert.AreEqual(testRoot["testnull"].Value, null);
-        Assert.AreEqual(testRoot["testtrue"].Value, true);
-        Assert.AreEqual(testRoot["testfalse"].Value, false);
-        Assert.AreEqual(testRoot["testst"].Value, new ShortTypeHandle("int", typeof(int)));
+        Assert.IsTrue(testRoot["player"]["enabled"].GetBool());
+        Assert.IsTrue(testRoot["testnull"] is AkoNull);
+        Assert.IsTrue(testRoot["testtrue"].GetBool());
+        Assert.IsFalse(testRoot["testfalse"].GetBool());
+        Assert.AreEqual(testRoot["testst"].GetType(), typeof(int));
     }
 }

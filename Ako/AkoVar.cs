@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Numerics;
@@ -23,6 +24,331 @@ namespace AkoSharp
             return handle.Type;
         }
     }
+
+    public abstract class AVar
+    {
+        //Some nice conversions to ATable or AArray if this instance is one of them
+        public ATable GetTable()
+        {
+            if (this is ATable table)
+                return table;
+            else
+                throw new Exception("This instance is not a table");
+        }
+        
+        public AArray GetArray()
+        {
+            if (this is AArray array)
+                return array;
+            else
+                throw new Exception("This instance is not an array");
+        }
+
+        public AVar this[string key]
+        {
+            get => GetTable()[key];
+            set => GetTable()[key] = value;
+        } 
+        
+        public AVar this[int index]
+        {
+            get => GetArray()[index];
+            set => GetArray()[index] = value;
+        }
+        
+        public bool GetBool()
+        {
+            if (this is ABool b)
+                return b.Value;
+            else
+                throw new Exception("This instance is not a bool");
+        }
+        
+        public int GetInt()
+        {
+            if (this is AInt i)
+                return i.Value;
+            else
+                throw new Exception("This instance is not an int");
+        }
+        
+        public float GetFloat()
+        {
+            if (this is AFloat f)
+                return f.Value;
+            else
+                throw new Exception("This instance is not a float");
+        }
+        
+        public string GetString()
+        {
+            if (this is AString s)
+                return s.Value;
+            else
+                throw new Exception("This instance is not a string");
+        }
+        
+        public Type GetType()
+        {
+            if (this is AShortType t)
+                return t.Value;
+            else
+                throw new Exception("This instance is not a type");
+        }
+        
+        public Vector2 GetVector2()
+        {
+            if (this is AVector v)
+                return new Vector2(v.Value.X, v.Value.Y);
+            else
+                throw new Exception("This instance is not a vector");
+        }
+        
+        public Vector3 GetVector3()
+        {
+            if (this is AVector v)
+                return new Vector3(v.Value.X, v.Value.Y, v.Value.Z);
+            else
+                throw new Exception("This instance is not a vector");
+        }
+        
+        public Vector4 GetVector4()
+        {
+            if (this is AVector v)
+                return v.Value;
+            else
+                throw new Exception("This instance is not a vector");
+        }
+        
+        public bool IsNull()
+        {
+            return this is AkoNull;
+        }
+    }
+    
+    public class ATable : AVar, IEnumerable<KeyValuePair<string, AVar>>
+    {
+        private readonly Dictionary<string, AVar> _table = new();
+        
+        public void Add(string key, AVar value)
+        {
+            _table.Add(key, value);
+        }
+        
+        //implicit conversion from ATable to Dictionary<string, AVar>
+        public static implicit operator Dictionary<string, AVar>(ATable table)
+        {
+            return table._table;
+        }
+        
+        public bool ContainsKey(string key)
+        {
+            return _table.ContainsKey(key);
+        }
+        
+        public bool TryGet(string key, out AVar value)
+        {
+            return _table.TryGetValue(key, out value);
+        }
+        
+        public AVar this[string key]
+        {
+            get => _table[key];
+            set => _table[key] = value;
+        }
+        
+        //For each
+
+        public IEnumerator<KeyValuePair<string, AVar>> GetEnumerator()
+        {
+            foreach (var kvp in _table)
+            {
+                yield return kvp;
+            }
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
+        }
+    }
+    
+    public class AArray : AVar, IEnumerable<AVar>
+    {
+        private readonly List<AVar> _array = new();
+        
+        public int Count => _array.Count;
+        
+        public void Add(AVar value)
+        {
+            _array.Add(value);
+        }
+
+        public AVar this[int index]
+        {
+            get => _array[index];
+            set => _array[index] = value;
+        }
+
+        public IEnumerator<AVar> GetEnumerator()
+        {
+            foreach (var value in _array)
+            {
+                yield return value;
+            }
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
+        }
+    }
+    
+    public class AString : AVar
+    {
+        public string Value;
+        
+        public AString(string value)
+        {
+            Value = value;
+        }
+        
+        public static implicit operator string(AString s)
+        {
+            return s.Value;
+        }
+        
+        public override string ToString()
+        {
+            return Value;
+        }
+    }
+    
+    public class AInt : AVar
+    {
+        public int Value;
+        
+        public AInt(int value)
+        {
+            Value = value;
+        }
+        
+        public static implicit operator int(AInt i)
+        {
+            return i.Value;
+        }
+        
+        public override string ToString()
+        {
+            return Value.ToString();
+        }
+    }
+    
+    public class AFloat : AVar
+    {
+        public float Value;
+        
+        public AFloat(float value)
+        {
+            Value = value;
+        }
+        
+        public static implicit operator float(AFloat f)
+        {
+            return f.Value;
+        }
+        
+        public override string ToString()
+        {
+            return Value.ToString();
+        }
+    }
+    
+    public class AShortType : AVar
+    {
+        public Type Value;
+        
+        public AShortType(Type value)
+        {
+            Value = value;
+        }
+        
+        public static implicit operator Type(AShortType s)
+        {
+            return s.Value;
+        }
+
+        public override string ToString()
+        {
+            return ShortTypeRegistry.GetShortTypeFromType(Value);
+        }
+    }
+    
+    public class ABool : AVar
+    {
+        public bool Value;
+        
+        public ABool(bool value)
+        {
+            Value = value;
+        }
+        
+        public static implicit operator bool(ABool b)
+        {
+            return b.Value;
+        }
+
+        public override string ToString()
+        {
+            return Value ? "+" : "-";
+        }
+    }
+    
+    public class AkoNull : AVar
+    {
+    }
+    
+    public class AVector : AVar
+    {
+        public Vector4 Value;
+        public int Count = 0;
+        
+        public AVector(Vector4 value)
+        {
+            Value = value;
+            Count = 4;
+        }
+        
+        public AVector(Vector3 value)
+        {
+            Value = new Vector4(value, 0);
+            Count = 3;
+        }
+        
+        public AVector(Vector2 value)
+        {
+            Value = new Vector4(value, 0, 0);
+            Count = 2;
+        }
+        
+        public static implicit operator Vector4(AVector v)
+        {
+            return v.Value;
+        }
+        
+        public static implicit operator Vector3(AVector v)
+        {
+            return new Vector3(v.Value.X, v.Value.Y, v.Value.Z);
+        }
+        
+        public static implicit operator Vector2(AVector v)
+        {
+            return new Vector2(v.Value.X, v.Value.Y);
+        }
+    }
+    
+    /*
+    [Obsolete("Use AVar instead")]
     public class AkoVar
     {
         public enum VarType
@@ -408,5 +734,5 @@ namespace AkoSharp
                 
             }
         }
-    }
+    }*/
 }

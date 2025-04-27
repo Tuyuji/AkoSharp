@@ -7,8 +7,7 @@
         <Description>A config language.</Description>
         <Company>Tuyuji</Company>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
-        <PackageVersion>2.1.0</PackageVersion>
-        <TargetFramework>net6.0</TargetFramework>
+        <PackageVersion>3.0.0</PackageVersion>
         <PackageProjectUrl>https://github.com/Tuyuji/AkoSharp</PackageProjectUrl>
         <RepositoryUrl>https://github.com/Tuyuji/AkoSharp</RepositoryUrl>
         <RepositoryType>git</RepositoryType>
@@ -16,18 +15,6 @@
         <RootNamespace>AkoSharp</RootNamespace>
         <PackageId>AkoSharp</PackageId>
         <Product>AkoSharp</Product>
+        <TargetFrameworks>net6.0;net9.0</TargetFrameworks>
     </PropertyGroup>
-
-    <ItemGroup>
-        <PackageReference Include="Antlr4.CodeGenerator" Version="4.6.6">
-            <PrivateAssets>all</PrivateAssets>
-            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-        </PackageReference>
-        <PackageReference Include="Antlr4.Runtime" Version="4.6.6" />
-        <Antlr4 Include="Ako.g4">
-            <Generator>MSBuild:Compile</Generator>
-            <CustomToolNamespace>Ako.Gen</CustomToolNamespace>
-            
-        </Antlr4>
-    </ItemGroup>
 </Project>

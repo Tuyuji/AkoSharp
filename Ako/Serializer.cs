@@ -6,88 +6,73 @@ namespace AkoSharp;
 
 public class Serializer
 {
-    public static string Serialize(AkoVar var)
+    public static string Serialize(AVar var)
     {
-        if (var.Type is not (AkoVar.VarType.TABLE or AkoVar.VarType.ARRAY))
-            throw new ArgumentException("Root variable must be a table or an array.", nameof(var));
-
-        switch (var.Type)
-        {
-            case AkoVar.VarType.TABLE:
-                return VisitTable(var, false);
-            case AkoVar.VarType.ARRAY:
-                return VisitArray(var, false);
-            default:
-                throw new Exception("This should never happen.");
-        }
+        if (var is ATable table)
+            return VisitTable(table, false);
+        
+        if(var is AArray array)
+            return VisitArray(array, false);
+        
+        throw new ArgumentException("Root variable must be a table or an array.", nameof(var));
     }
 
-    private static string Visit(AkoVar var)
+    private static string Visit(AVar var)
     {
-        switch (var.Type)
+        return var switch 
         {
-            
-            case AkoVar.VarType.TABLE:
-                return VisitTable(var);
-            case AkoVar.VarType.ARRAY:
-                return VisitArray(var);
-            case AkoVar.VarType.NULL:
-                return VisitNull(var);
-            case AkoVar.VarType.STRING:
-                return VisitString(var); 
-            case AkoVar.VarType.INT:
-                return VisitInt(var);
-            case AkoVar.VarType.FLOAT:
-                return VisitFloat(var);
-            case AkoVar.VarType.SHORT_TYPE:
-                return VisitShortType(var);
-            case AkoVar.VarType.BOOL:
-                return VisitBool(var);
-            default:
-                throw new ArgumentOutOfRangeException();
-        }
+            ATable table => VisitTable(table),
+            AArray array => VisitArray(array),
+            AkoNull _ => VisitNull(),
+            AString str => VisitString(str),
+            AInt i => VisitInt(i),
+            AFloat f => VisitFloat(f),
+            AShortType st => VisitShortType(st),
+            ABool b => VisitBool(b),
+            _ => throw new ArgumentException("Unknown variable type.", nameof(var))
+        };
     }
 
-    private static string VisitNull(AkoVar var)
+    private static string VisitNull()
     {
         return ";";
     }
     
-    private static string VisitString(AkoVar var)
+    private static string VisitString(AString var)
     {
         return $"\"{var.Value}\"";
     }
     
-    private static string VisitInt(AkoVar var)
+    private static string VisitInt(AInt var)
     {
         return var.Value.ToString();
     }
     
-    private static string VisitFloat(AkoVar var)
+    private static string VisitFloat(AFloat var)
     {
         return var.Value.ToString();
     }
     
-    private static string VisitShortType(AkoVar var)
+    private static string VisitShortType(AShortType var)
     {
         return $"&{ShortTypeRegistry.GetShortTypeFromType(var.Value)}";
     }
     
-    private static string VisitBool(AkoVar var)
+    private static string VisitBool(ABool var)
     {
         if ((bool)var.Value)
             return "+";
         return "-";
     }
     
-    private static string VisitTable(AkoVar table, bool includeBrackets = true)
+    private static string VisitTable(ATable table, bool includeBrackets = true)
     {
         StringBuilder sb = new StringBuilder();
 
         if(includeBrackets)
             sb.Append("[\n");
 
-        foreach (var (key, value) in table.TableValue)
+        foreach (var (key, value) in table)
         {
             if(includeBrackets)
                 sb.Append('\t');
@@ -102,32 +87,28 @@ public class Serializer
         return sb.ToString();
     }
 
-    private static string VisitArray(AkoVar array, bool includeBrackets = true)
+    private static string VisitArray(AArray array, bool includeBrackets = true)
     {
         StringBuilder sb = new StringBuilder();
 
         bool isAllNumbers = true;
-        foreach (var var in array.ArrayValue)
+        foreach (var var in array)
         {
-            switch (var.Type)
+            if (var is not AInt or AFloat)
             {
-                case AkoVar.VarType.INT:
-                    case AkoVar.VarType.FLOAT:
-                    break;
-                default:
-                    isAllNumbers = false;
-                    break;
+                isAllNumbers = false;
+                break;
             }
         }
 
-        if (isAllNumbers && array.ArrayValue.Count <= 4)
+        if (isAllNumbers && array.Count <= 4)
         {
             //Treat as a vector
             //append the value then 'x' but not for the last element
-            var last = array.ArrayValue.Count;
+            var last = array.Count;
             for (int i = 0; i < last; i++)
             {
-                sb.Append(array.ArrayValue[i].Value);
+                sb.Append(array[i].ToString());
                 if (i != last - 1)
                     sb.Append('x');
             }
@@ -138,7 +119,7 @@ public class Serializer
         if(includeBrackets)
             sb.Append("[[\n");
         
-        foreach (var var in array.ArrayValue)
+        foreach (var var in array)
         {
             if(includeBrackets)
                 sb.Append('\t');
