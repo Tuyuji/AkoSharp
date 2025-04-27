@@ -3,6 +3,8 @@ A C# implementation of the Ako config language.
 
 For info about Ako see [Ako's README](https://github.com/Tuyuji/Ako/blob/main/README.md)
 
+[Nuget](https://www.nuget.org/packages/AkoSharp)
+
 ## Getting started
 ```csharp
 using AkoSharp;
