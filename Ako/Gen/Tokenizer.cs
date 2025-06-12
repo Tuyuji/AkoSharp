@@ -91,11 +91,11 @@ public ref struct Tokenizer
     private bool ParseDigit()
     {
         var c = Peek();
-        _builder.Clear();
+        var startIndex = _index;
         
         if (c.HasValue && (c == '+' || c == '-'))
         {
-            _builder.Append(Consume());
+            Consume();
             c = Peek();
         }
         
@@ -109,22 +109,24 @@ public ref struct Tokenizer
         {
             while (Peek().HasValue && char.IsDigit(Peek().Value))
             {
-                _builder.Append(Consume());
+                Consume();
             }
 
             if (Peek().HasValue && Peek() == '.')
             {
-                _builder.Append(Consume());
+                Consume();
                 while (Peek().HasValue && char.IsDigit(Peek().Value))
                 {
-                    _builder.Append(Consume());
+                    Consume();
                 }
-                AddToken(TokenType.Float, float.Parse(_builder.ToString()));
+                var numStr = _span.Slice(startIndex, _index - startIndex);
+                AddToken(TokenType.Float, float.Parse(numStr));
                 return true;
             }
             else
             {
-                AddToken(TokenType.Int, int.Parse(_builder.ToString()));
+                var numStr = _span.Slice(startIndex, _index - startIndex);
+                AddToken(TokenType.Int, int.Parse(numStr));
                 return true;
             }
         }
@@ -221,14 +223,15 @@ public ref struct Tokenizer
 
             if (char.IsLetter(c) || c == '_')
             {
-                _builder.Clear();
+                var startIndex = _index;
                 lookahead = Peek();
                 while (lookahead.HasValue && lookahead != '.' && (char.IsLetterOrDigit(lookahead.Value) || lookahead == '_'))
                 {
-                    _builder.Append(Consume());
+                    Consume();
                     lookahead = Peek();
                 }
-                AddToken(TokenType.Identifier, _builder.ToString());
+                var identifierSpan = _span.Slice(startIndex, _index - startIndex);
+                AddToken(TokenType.Identifier, identifierSpan.ToString());
                 continue;
             }
 
